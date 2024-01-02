@@ -1,21 +1,20 @@
+'use client'
+
 import Image from 'next/image'
 import prisma from '@/prisma/client'
+import { getCitiesWeather } from './lib/data'
+import { useEffect, useState } from 'react';
 
-function getWeatherData() {
-    const weatherData = prisma.city.findMany({
-        take: 10,
-        orderBy: {
-            createdAt: 'desc'
-        }
-    }).then((data) => {
-
-        console.log(data)
-    });
-
-
-    console.log('here')
-    console.log('Weather'+weatherData)
+type weatherData = {
+    name: string,
+    lon: number,
+    lat: number,
+    temp: number,
+    createdAt: Date,
+    updatedAt: Date
 }
+
+
 
 function insertWeatherData() {
     const weatherData = prisma.city.create({
@@ -33,12 +32,43 @@ function insertWeatherData() {
 }
 
 export default function Home( ) {
+
+    const [ weatherData: weatherData[], setWeatherData ] = useState([]);
+
+    useEffect(() => {
+        const fetchWeatherData = async () => {
+            try {
+                const data = await getCitiesWeather();
+                setWeatherData(data);
+            } catch (error) {
+                console.error('Failed to fetch weather data:', error);
+            }
+        };
+
+        fetchWeatherData();
+    }, []);
+
   return (
     <>
-        { getWeatherData() }
         <div className="artboard artboard-horizontal phone-6 m-auto text-center">
             <h3 className="h3">Weather Leadership Board</h3>
             
+            {weatherData.length > 0 ? (
+                weatherData.map((city) => (
+                    // Your JSX here
+                    <div className="card">
+                        <div className="card-body">
+                            <h5 className="card-title">{city.name}</h5>
+                            <h6 className="card-subtitle mb-2 text-muted">Temp: {city.temp}</h6>
+                            <p className="card-text">Lat: {city.lat}</p>
+                            <p className="card-text">Lon: {city.lon}</p>
+                        </div>
+                    </div>
+                ))
+            ) : (
+                <div>Loading...</div>
+            )}
+
         </div> 
     </>
   )

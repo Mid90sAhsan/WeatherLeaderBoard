@@ -4,6 +4,7 @@ import Image from 'next/image'
 import prisma from '@/prisma/client'
 import { getCitiesWeather } from './lib/data'
 import { useEffect, useState } from 'react';
+import { getStaticProps } from 'next/dist/build/templates/pages';
 
 type weatherData = {
     name: string,
@@ -14,7 +15,7 @@ type weatherData = {
     updatedAt: Date
 }
 
-
+var weatherData: weatherData[] = [];
 
 function insertWeatherData() {
     const weatherData = prisma.city.create({
@@ -31,30 +32,27 @@ function insertWeatherData() {
     });
 }
 
-export default function Home( ) {
+async function getStaticProps() {
 
-    const [ weatherData: weatherData[], setWeatherData ] = useState([]);
+    weatherData = await prisma.city.findMany();
 
-    useEffect(() => {
-        const fetchWeatherData = async () => {
-            try {
-                const data = await getCitiesWeather();
-                setWeatherData(data);
-            } catch (error) {
-                console.error('Failed to fetch weather data:', error);
-            }
-        };
+    return {
+        props: {
+            weatherData: weatherData
+        }
+    }
+}
 
-        fetchWeatherData(); 
-    }, []);
+
+export default function Home( {weatherData: weatherData} ) {
 
   return (
     <>
         <div className="artboard artboard-horizontal phone-6 m-auto text-center">
             <h3 className="h3">Weather Leadership Board</h3>
-            
+             
             {weatherData.length > 0 ? (
-                weatherData.map((city) => (
+                weatherData.map((city, index) => (
                     // Your JSX here
                     <div className="card">
                         <div className="card-body">
@@ -73,3 +71,4 @@ export default function Home( ) {
     </>
   )
 }
+ 

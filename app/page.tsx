@@ -1,5 +1,3 @@
-'use client'
-
 import Image from 'next/image'
 import prisma from '@/prisma/client'
 import { getCitiesWeather } from './lib/data'
@@ -30,21 +28,30 @@ function insertWeatherData() {
     }).then((data) => {
         console.log(data)
     });
+} 
+
+async function getWeatherData() {
+    weatherData = await prisma.city.findMany({});
+    console.log( 'Getting city ' + weatherData );
+      
+    //    await fetch("https://api.open-meteo.com/v1/forecast?latitude=33.7215&longitude=73.0433&current=temperature_2m")
+    //     .then(response => response.text())
+    //     .then(result => console.log(result))
+    //     .catch(error => console.log('error', error));
+
+    var data = await fetch('https://api.open-meteo.com/v1/forecast?latitude=33.7215&longitude=73.0433&current=temperature_2m');
+    console.log( 'data ' + data.json() );
+
+    // weatherData.forEach(async (city, index) => {
+    //     console.log( city.name );
+        
+    // });
+   
 }
 
-async function getStaticProps() {
+getWeatherData(); 
 
-    weatherData = await prisma.city.findMany();
-
-    return {
-        props: {
-            weatherData: weatherData
-        }
-    }
-}
-
-
-export default function Home( {weatherData: weatherData} ) {
+export default function Home( ) {
 
   return (
     <>
@@ -52,9 +59,9 @@ export default function Home( {weatherData: weatherData} ) {
             <h3 className="h3">Weather Leadership Board</h3>
              
             {weatherData.length > 0 ? (
-                weatherData.map((city, index) => (
+                weatherData.map((city, index) => ( 
                     // Your JSX here
-                    <div className="card">
+                    <div className="card" key={index}>
                         <div className="card-body">
                             <h5 className="card-title">{city.name}</h5>
                             <h6 className="card-subtitle mb-2 text-muted">Temp: {city.temp}</h6>
